@@ -150,7 +150,17 @@ public class CommandeService {
      */
     @Transactional
     public Commande enregistreExpedition(int commandeNum) {
-        // TODO : implémenter cette méthode
-        throw new UnsupportedOperationException("Pas encore implémenté");
+        var commande = commandeDao.findById(commandeNum).orElseThrow();
+
+        if (commande.getEnvoyeele() != null) {
+            throw new IllegalStateException("commande deja envoyee");
+        }
+
+        for(Ligne ligne : commande.getLignes()) {
+            ligne.getProduit().setUnitesEnStock(ligne.getProduit().getUnitesEnStock() - ligne.getQuantite());
+            ligne.getProduit().setUnitesCommandees(ligne.getProduit().getUnitesCommandees() - ligne.getQuantite());
+        }
+        commande.setEnvoyeele(LocalDate.now());
+        return commande;
     }
 }
